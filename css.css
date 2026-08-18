@@ -482,3 +482,109 @@
     .modal-actions{ flex-direction:column-reverse; }
     .modal-btn{ width:100%; }
   }
+
+  /* Auth screen */
+  .auth-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .auth-card{
+    background:var(--paper);
+    border-radius:4px;
+    padding:32px 28px;
+    max-width:360px;
+    width:100%;
+    box-shadow:0 12px 30px rgba(38,42,36,0.14);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .auth-title{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    font-size:22px;
+    color:var(--pencil);
+    margin:0;
+    text-align:center;
+  }
+  .auth-subtitle{
+    font-size:12px;
+    color:var(--pencil-soft);
+    text-align:center;
+    margin:0 0 8px;
+    line-height:1.5;
+  }
+  .auth-card input{
+    border:1px solid var(--pencil-soft);
+    background:transparent;
+    color:var(--pencil);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    padding:11px 12px;
+    border-radius:2px;
+    outline:none;
+    width:100%;
+  }
+  .auth-card input:focus{ border-color:var(--accent); }
+  .auth-error{
+    font-size:12px;
+    min-height:14px;
+    margin:0;
+    color:var(--danger);
+    line-height:1.5;
+  }
+  .auth-error.info{ color:var(--olive); }
+  .auth-btn{
+    font-family:'Oswald', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:11px 16px;
+    border-radius:2px;
+    cursor:pointer;
+    border:none;
+    min-height:42px;
+  }
+  .auth-btn.primary{ background:var(--accent); color:#FFFFFF; }
+  .auth-btn.primary:hover{ opacity:0.9; }
+  .auth-btn.primary:disabled{ opacity:0.5; cursor:default; }
+  .auth-btn.secondary{
+    background:transparent;
+    color:var(--pencil-soft);
+    text-decoration:underline;
+    padding:4px;
+    min-height:auto;
+    font-family:'IBM Plex Mono', monospace;
+    text-transform:none;
+    letter-spacing:0;
+    font-size:12px;
+  }
+
+  /* User bar */
+  .user-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+    font-size:11px;
+    color:var(--pencil-soft);
+    gap:10px;
+  }
+  .user-bar span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .user-bar button{
+    background:none;
+    border:none;
+    color:var(--danger);
+    text-decoration:underline;
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    white-space:nowrap;
+    padding:4px 0;
+  }

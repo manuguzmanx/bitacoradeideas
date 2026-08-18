@@ -15,9 +15,24 @@
   const modalOverlay = document.getElementById('modalOverlay');
   const modalCancelBtn = document.getElementById('modalCancelBtn');
   const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+  const authScreen = document.getElementById('authScreen');
+  const authSubtitle = document.getElementById('authSubtitle');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
+  const authError = document.getElementById('authError');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const authToggleBtn = document.getElementById('authToggleBtn');
+  const appRoot = document.getElementById('appRoot');
+  const userEmailLabel = document.getElementById('userEmailLabel');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-  const STORAGE_KEY = 'bitacora-de-ideas:data';
-  const DEFAULT_CATEGORIES = ['General','Negocios','Personal','Otros'];
+  const SUPABASE_URL = 'https://gaxptnxswpksbvfygmrw.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_AFX2kJ2OYl6sNgObBrwPhg_-j6hkAYm';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let authMode = 'signin';
+  let currentUser = null;
+  const DEFAULT_CATEGORIES = ['General','Negocios','Contenido'];
 
   let categories = [...DEFAULT_CATEGORIES];
   let ideas = [];
@@ -26,43 +41,152 @@
   let nextBib = 1;
   let pendingDeleteId = null;
 
+  async function loadFromCloud(){
+    statusMsg.textContent = 'Cargando tus ideas...';
+    try{
+      const { data, error } = await sb
+        .from('bitacora_data')
+        .select('data')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      if(error) throw error;
+
+      if(data && data.data){
+        const d = data.data;
+        categories = (Array.isArray(d.categories) && d.categories.length) ? d.categories : [...DEFAULT_CATEGORIES];
+        ideas = Array.isArray(d.ideas) ? d.ideas.map(i => ({ ...i, status: i.status || 'pendiente' })) : [];
+      } else {
+        categories = [...DEFAULT_CATEGORIES];
+        ideas = [];
+        await persist();
+      }
+      currentTag = categories[0];
+      nextBib = ideas.reduce((max,i)=>Math.max(max,i.bib||0),0) + 1;
+      statusMsg.textContent = '';
+    }catch(e){
+      statusMsg.textContent = 'No se pudieron cargar tus datos. Revisa tu conexión.';
+    }
+  }
+
+  async function persist(){
+    if(!currentUser) return;
+    try{
+      const { error } = await sb.from('bitacora_data').upsert({
+        user_id: currentUser.id,
+        data: { categories, ideas },
+        updated_at: new Date().toISOString()
+      });
+      if(error) throw error;
+      statusMsg.textContent = '';
+    }catch(e){
+      statusMsg.textContent = 'No se pudo guardar en la nube.';
+    }
+  }
+
+  function setAuthMode(mode){
+    authMode = mode;
+    authError.textContent = '';
+    authError.className = 'auth-error';
+    if(mode === 'signin'){
+      authSubtitle.textContent = 'Inicia sesión para ver tus ideas en cualquier dispositivo';
+      authSubmitBtn.textContent = 'Iniciar sesión';
+      authToggleBtn.textContent = '¿No tienes cuenta? Crear una';
+    } else {
+      authSubtitle.textContent = 'Crea tu cuenta para empezar a guardar en la nube';
+      authSubmitBtn.textContent = 'Crear cuenta';
+      authToggleBtn.textContent = '¿Ya tienes cuenta? Iniciar sesión';
+    }
+  }
+
+  async function handleAuthSubmit(){
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    authError.className = 'auth-error';
+    if(!email || !password){
+      authError.textContent = 'Escribe tu correo y contraseña.';
+      return;
+    }
+    if(authMode === 'signup' && password.length < 6){
+      authError.textContent = 'La contraseña necesita al menos 6 caracteres.';
+      return;
+    }
+    authSubmitBtn.disabled = true;
+    authError.textContent = '';
+    try{
+      if(authMode === 'signin'){
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if(error) throw error;
+      } else {
+        const { data, error } = await sb.auth.signUp({ email, password });
+        if(error) throw error;
+        if(!data.session){
+          authError.className = 'auth-error info';
+          authError.textContent = 'Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión.';
+          setAuthMode('signin');
+        }
+      }
+    }catch(e){
+      authError.textContent = e.message && e.message.includes('already registered')
+        ? 'Ese correo ya tiene cuenta, inicia sesión.'
+        : (e.message || 'No se pudo completar la operación.');
+    }
+    authSubmitBtn.disabled = false;
+  }
+
+  function showAuthScreen(){
+    authScreen.style.display = 'flex';
+    appRoot.style.display = 'none';
+  }
+
+  async function onLogin(user){
+    currentUser = user;
+    authScreen.style.display = 'none';
+    appRoot.style.display = 'block';
+    userEmailLabel.textContent = user.email;
+    await loadFromCloud();
+    renderTagSelect();
+    renderFilters();
+    renderCatList();
+    renderList();
+  }
+
+  function onLogout(){
+    currentUser = null;
+    categories = [...DEFAULT_CATEGORIES];
+    ideas = [];
+    authEmail.value = '';
+    authPassword.value = '';
+    setAuthMode('signin');
+    showAuthScreen();
+  }
+
+  async function initAuth(){
+    const { data: { session } } = await sb.auth.getSession();
+    if(session){
+      await onLogin(session.user);
+    } else {
+      showAuthScreen();
+    }
+    sb.auth.onAuthStateChange((event, session)=>{
+      if(session && (!currentUser || currentUser.id !== session.user.id)){
+        onLogin(session.user);
+      } else if(!session && currentUser){
+        onLogout();
+      }
+    });
+  }
+
+  authSubmitBtn.addEventListener('click', handleAuthSubmit);
+  authToggleBtn.addEventListener('click', ()=>setAuthMode(authMode === 'signin' ? 'signup' : 'signin'));
+  authPassword.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') handleAuthSubmit(); });
+  logoutBtn.addEventListener('click', ()=>sb.auth.signOut());
+
   function pad(n){ return String(n).padStart(3,'0'); }
 
   function formatDate(ts){
     const d = new Date(ts);
     return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short' });
-  }
-
-  function load(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw){
-        const data = JSON.parse(raw);
-        if(Array.isArray(data.categories) && data.categories.length){
-          categories = data.categories;
-        }
-        if(Array.isArray(data.ideas)){
-          ideas = data.ideas.map(i => {
-            let status = i.status || (i.done ? 'archivada' : 'pendiente');
-            return { ...i, status };
-          });
-        }
-      }
-    }catch(e){
-      categories = [...DEFAULT_CATEGORIES];
-      ideas = [];
-    }
-    currentTag = categories[0];
-    nextBib = ideas.reduce((max,i)=>Math.max(max,i.bib||0),0) + 1;
-  }
-
-  function persist(){
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ categories, ideas }));
-      statusMsg.textContent = '';
-    }catch(e){
-      statusMsg.textContent = 'No se pudo guardar en este navegador.';
-    }
   }
 
   function renderTagSelect(){
@@ -352,9 +476,5 @@
     if(e.key === 'Enter') addCategory();
   });
 
-  load();
-  renderTagSelect();
-  renderFilters();
-  renderCatList();
-  renderList();
+  initAuth();
 })();
