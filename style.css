@@ -152,6 +152,7 @@
     text-decoration:underline;
     cursor:pointer;
     padding:8px 0 2px;
+    margin: 2rem 0;
   }
   .cat-manager{
     display:none;
