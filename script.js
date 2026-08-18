@@ -32,7 +32,7 @@
 
   let authMode = 'signin';
   let currentUser = null;
-  const DEFAULT_CATEGORIES = ['General','Negocios','Contenido'];
+  const DEFAULT_CATEGORIES = ['General','Maratón','Contenido','Reflexión'];
 
   let categories = [...DEFAULT_CATEGORIES];
   let ideas = [];
@@ -40,6 +40,7 @@
   let currentFilter = 'Todas';
   let nextBib = 1;
   let pendingDeleteId = null;
+  let editingId = null;
 
   async function loadFromCloud(){
     statusMsg.textContent = 'Cargando tus ideas...';
@@ -333,13 +334,13 @@
       if(idea.status !== 'archivada' && idea.status !== 'realizada'){
         const progressBtn = document.createElement('button');
         progressBtn.className = 'action-btn progress' + (idea.status === 'en_proceso' ? ' active' : '');
-        progressBtn.textContent = idea.status === 'en_proceso' ? 'En proceso' : 'En proceso';
+        progressBtn.textContent = idea.status === 'en_proceso' ? 'En proceso' : 'Marcar en proceso';
         progressBtn.addEventListener('click', ()=>toggleProgress(idea.id));
         actions.appendChild(progressBtn);
 
         const completeBtn = document.createElement('button');
         completeBtn.className = 'action-btn complete';
-        completeBtn.textContent = 'Realizada';
+        completeBtn.textContent = 'Realizar';
         completeBtn.title = 'Enviar a Realizadas';
         completeBtn.addEventListener('click', ()=>completeIdea(idea.id));
         actions.appendChild(completeBtn);
@@ -358,6 +359,13 @@
         actions.appendChild(restoreBtn);
       }
 
+      const editBtn = document.createElement('button');
+      editBtn.className = 'icon-btn';
+      editBtn.title = 'Editar texto';
+      editBtn.textContent = '✎';
+      editBtn.addEventListener('click', ()=>startEdit(idea.id));
+      actions.appendChild(editBtn);
+
       const delBtn = document.createElement('button');
       delBtn.className = 'icon-btn';
       delBtn.title = 'Eliminar definitivamente';
@@ -367,12 +375,40 @@
 
       top.appendChild(meta);
       top.appendChild(actions);
+      card.appendChild(top);
+
+      if(editingId === idea.id){
+        const editArea = document.createElement('textarea');
+        editArea.className = 'idea-edit-area';
+        editArea.value = idea.text;
+
+        const editActions = document.createElement('div');
+        editActions.className = 'idea-edit-actions';
+
+        const cancelEditBtn = document.createElement('button');
+        cancelEditBtn.className = 'action-btn';
+        cancelEditBtn.textContent = 'Cancelar';
+        cancelEditBtn.addEventListener('click', ()=>{ editingId = null; renderList(); });
+
+        const saveEditBtn = document.createElement('button');
+        saveEditBtn.className = 'action-btn edit';
+        saveEditBtn.textContent = 'Guardar cambios';
+        saveEditBtn.addEventListener('click', ()=>saveEdit(idea.id, editArea.value));
+
+        editActions.appendChild(cancelEditBtn);
+        editActions.appendChild(saveEditBtn);
+
+        card.appendChild(editArea);
+        card.appendChild(editActions);
+        listEl.appendChild(card);
+        editArea.focus();
+        editArea.setSelectionRange(editArea.value.length, editArea.value.length);
+        return;
+      }
 
       const text = document.createElement('div');
       text.className = 'idea-text';
       text.textContent = idea.text;
-
-      card.appendChild(top);
       card.appendChild(text);
       listEl.appendChild(card);
     });
@@ -420,6 +456,26 @@
       renderList();
       persist();
     }
+  }
+
+  function startEdit(id){
+    editingId = id;
+    renderList();
+  }
+
+  function saveEdit(id, newText){
+    const trimmed = newText.trim();
+    if(!trimmed){
+      statusMsg.textContent = 'La idea no puede quedar vacía.';
+      return;
+    }
+    const idea = ideas.find(i=>i.id===id);
+    if(idea){
+      idea.text = trimmed;
+    }
+    editingId = null;
+    renderList();
+    persist();
   }
 
   function restoreIdea(id){

@@ -1,4 +1,4 @@
-  :root{
+:root{
     --bg:#EFE9DC;
     --paper:#FFFFFF;
     --paper-dim:#E7E1D2;
@@ -358,6 +358,27 @@
   .action-btn.complete{ border-color:var(--gold); color:var(--gold); }
   .action-btn.archive{ border-color:var(--pencil-soft); color:var(--pencil-soft); }
   .action-btn.restore{ border-color:var(--olive); color:var(--olive); }
+  .action-btn.edit{ border-color:var(--accent); color:var(--accent); }
+  .idea-edit-area{
+    width:100%;
+    min-height:64px;
+    resize:vertical;
+    border:1px solid var(--accent);
+    outline:none;
+    background:transparent;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    line-height:1.55;
+    color:var(--pencil);
+    padding:8px;
+    border-radius:2px;
+  }
+  .idea-edit-actions{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+    justify-content:flex-end;
+  }
   .icon-btn{
     background:none;
     border:none;
