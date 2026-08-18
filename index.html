@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Bitácora de ideas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div>
+        <p class="title">Bitácora de ideas</p>
+        <p class="subtitle">vacía, guarda, vuelve cuando quieras</p>
+      </div>
+      <div class="count-badge" id="countBadge">0 IDEAS</div>
+    </div>
+
+    <div class="capture">
+      <textarea id="ideaInput" placeholder="¿Qué se te ocurrió? Escríbelo tal como llegó, sin pulirlo..."></textarea>
+      <div class="capture-footer">
+        <div class="tag-select" id="tagSelect"></div>
+        <button class="save-btn" id="saveBtn">Guardar</button>
+      </div>
+    </div>
+
+    <button class="cat-manager-toggle" id="catManagerToggle">+ editar categorías</button>
+    <div class="cat-manager" id="catManager">
+      <p class="cat-manager-title">Tus categorías</p>
+      <div class="cat-list" id="catList"></div>
+      <div class="cat-add-row">
+        <input type="text" id="catInput" placeholder="Nueva categoría..." maxlength="20">
+        <button class="cat-add-btn" id="catAddBtn">Agregar</button>
+      </div>
+    </div>
+
+    <div class="filters" id="filters"></div>
+
+    <div class="list" id="list"></div>
+    <div id="emptyState" class="empty" style="display:none;">
+      <div class="big">Aún no hay nada aquí</div>
+      <div class="small">Escribe la primera idea arriba, aunque sea una palabra suelta.</div>
+    </div>
+
+    <div class="status" id="statusMsg"></div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle">
+      <p class="modal-title" id="modalTitle">Eliminar idea</p>
+      <p class="modal-text">Se borrará <strong>para siempre</strong> y no se podrá recuperar. ¿Seguro que quieres continuar?</p>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="modalCancelBtn">Cancelar</button>
+        <button class="modal-btn confirm" id="modalConfirmBtn">Sí, eliminar</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
