@@ -333,13 +333,13 @@
       if(idea.status !== 'archivada' && idea.status !== 'realizada'){
         const progressBtn = document.createElement('button');
         progressBtn.className = 'action-btn progress' + (idea.status === 'en_proceso' ? ' active' : '');
-        progressBtn.textContent = idea.status === 'en_proceso' ? 'En proceso' : 'Marcar en proceso';
+        progressBtn.textContent = idea.status === 'en_proceso' ? 'En proceso' : 'En proceso';
         progressBtn.addEventListener('click', ()=>toggleProgress(idea.id));
         actions.appendChild(progressBtn);
 
         const completeBtn = document.createElement('button');
         completeBtn.className = 'action-btn complete';
-        completeBtn.textContent = 'Realizar';
+        completeBtn.textContent = 'Realizada';
         completeBtn.title = 'Enviar a Realizadas';
         completeBtn.addEventListener('click', ()=>completeIdea(idea.id));
         actions.appendChild(completeBtn);
