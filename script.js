@@ -17,7 +17,7 @@
   const modalConfirmBtn = document.getElementById('modalConfirmBtn');
 
   const STORAGE_KEY = 'bitacora-de-ideas:data';
-  const DEFAULT_CATEGORIES = ['General','Maratón','Contenido','Reflexión'];
+  const DEFAULT_CATEGORIES = ['General','Negocios','Personal','Otros'];
 
   let categories = [...DEFAULT_CATEGORIES];
   let ideas = [];
